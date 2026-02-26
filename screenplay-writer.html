@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FADE IN — Screenplay Writer</title>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --surface: #161618;
+    --surface2: #1e1e21;
+    --border: #2a2a2e;
+    --accent: #e8c840;
+    --accent2: #c4a82a;
+    --text: #e8e6df;
+    --muted: #6b6a65;
+    --script-bg: #f5f2e8;
+    --script-text: #1a1a1a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* TOP BAR */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 52px;
+    flex-shrink: 0;
+    gap: 12px;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .title-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    padding: 4px 8px;
+    width: 260px;
+    text-align: center;
+    letter-spacing: 1px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .title-input:focus { border-color: var(--accent); }
+  .title-input::placeholder { color: var(--muted); }
+
+  .header-actions { display: flex; gap: 8px; }
+
+  .btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Barlow', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { border-color: var(--accent); color: var(--accent); }
+  .btn.primary:hover { background: var(--accent); color: #000; }
+
+  /* LAYOUT */
+  .workspace {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* LEFT SIDEBAR */
+  .sidebar {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    border-bottom: 1px solid var(--border);
+    padding: 14px;
+  }
+
+  .sidebar-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  /* Element buttons */
+  .element-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .el-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    padding: 7px 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .el-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .el-btn .key {
+    font-family: 'Barlow', sans-serif;
+    font-size: 9px;
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+  }
+
+  /* Scene list */
+  .scene-list { display: flex; flex-direction: column; gap: 3px; }
+  .scene-item {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    padding: 5px 8px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .scene-item:hover { color: var(--text); border-left-color: var(--accent); }
+
+  /* Stats */
+  .stats { display: flex; flex-direction: column; gap: 6px; }
+  .stat { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+  .stat span { color: var(--text); }
+
+  /* SCRIPT AREA */
+  .script-container {
+    flex: 1;
+    background: #2a2826;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .page {
+    background: var(--script-bg);
+    color: var(--script-text);
+    width: 100%;
+    max-width: 680px;
+    min-height: 900px;
+    padding: 80px 80px 80px 120px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    position: relative;
+  }
+
+  .script-editor {
+    width: 100%;
+    min-height: 800px;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'Courier Prime', monospace;
+    font-size: 12pt;
+    line-height: 1.8;
+    color: var(--script-text);
+    resize: none;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* RIGHT PANEL */
+  .right-panel {
+    width: 240px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+
+  .panel-section {
+    border-bottom: 1px solid var(--border);
+    padding: 14px;
+  }
+
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  /* Characters */
+  .char-list { display: flex; flex-direction: column; gap: 4px; }
+  .char-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    padding: 5px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .char-tag:hover { border-color: var(--accent); }
+  .char-count { color: var(--muted); font-size: 10px; }
+
+  .add-char-row { display: flex; gap: 6px; margin-top: 6px; }
+  .add-char-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    padding: 5px 8px;
+    outline: none;
+  }
+  .add-char-input:focus { border-color: var(--accent); }
+  .add-char-btn {
+    background: var(--accent);
+    border: none;
+    color: #000;
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    width: 28px;
+    cursor: pointer;
+  }
+
+  /* Notes */
+  .notes-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 11px;
+    line-height: 1.6;
+    padding: 8px;
+    resize: none;
+    height: 120px;
+    outline: none;
+  }
+  .notes-textarea:focus { border-color: var(--accent); }
+
+  /* Format guide */
+  .format-guide { display: flex; flex-direction: column; gap: 6px; }
+  .guide-item { font-size: 10px; color: var(--muted); line-height: 1.5; }
+  .guide-item code {
+    color: var(--accent);
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    background: var(--bg);
+    padding: 1px 4px;
+  }
+
+  /* AI assist panel */
+  .ai-section { padding: 14px; }
+  .ai-prompt {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 11px;
+    padding: 8px;
+    resize: none;
+    height: 80px;
+    outline: none;
+    margin-bottom: 6px;
+  }
+  .ai-prompt:focus { border-color: var(--accent); }
+  .ai-result {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    padding: 8px;
+    min-height: 60px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    margin-top: 6px;
+    display: none;
+  }
+
+  /* Toolbar */
+  .format-toolbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 20px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .format-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .format-pill:hover, .format-pill.active { 
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+
+  .toolbar-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+
+  .current-element {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    padding: 4px 10px;
+    border: 1px solid var(--accent);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    width: 460px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .modal p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 10px; }
+  .modal code {
+    font-family: 'Courier Prime', monospace;
+    background: var(--bg);
+    color: var(--accent);
+    padding: 2px 6px;
+    font-size: 12px;
+  }
+  .modal table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  .modal td { padding: 6px 10px; font-size: 12px; border-bottom: 1px solid var(--border); }
+  .modal td:first-child { color: var(--accent); font-family: 'Courier Prime', monospace; font-size: 11px; width: 140px; }
+  .modal td:last-child { color: var(--muted); }
+  .close-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Barlow', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 6px 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    margin-top: 12px;
+    float: right;
+  }
+  .close-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .page-num {
+    position: absolute;
+    top: 30px;
+    right: 50px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 11pt;
+    color: #888;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">FADE IN</div>
+  <div style="font-family:'Barlow',sans-serif;font-size:11px;font-weight:300;color:var(--muted);letter-spacing:1px;white-space:nowrap;">by <span style="color:var(--text)">Aaron Sermon</span></div>
+  <input class="title-input" type="text" id="projectTitle" placeholder="UNTITLED SCREENPLAY" value="UNTITLED SCREENPLAY">
+  <div class="header-actions">
+    <button class="btn" onclick="showGuide()">FORMAT GUIDE</button>
+    <button class="btn" onclick="clearScript()" >NEW</button>
+    <button class="btn primary" onclick="exportScript()">EXPORT</button>
+  </div>
+</header>
+
+<!-- FORMAT TOOLBAR -->
+<div class="format-toolbar">
+  <span style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-right:4px;">INSERT:</span>
+  <button class="format-pill" onclick="insertElement('scene')">SCENE</button>
+  <button class="format-pill" onclick="insertElement('action')">ACTION</button>
+  <button class="format-pill" onclick="insertElement('character')">CHARACTER</button>
+  <button class="format-pill" onclick="insertElement('dialogue')">DIALOGUE</button>
+  <button class="format-pill" onclick="insertElement('parenthetical')">PARENTHETICAL</button>
+  <button class="format-pill" onclick="insertElement('transition')">TRANSITION</button>
+  <div class="toolbar-sep"></div>
+  <div class="current-element" id="currentEl">ACTION</div>
+</div>
+
+<!-- WORKSPACE -->
+<div class="workspace">
+
+  <!-- SIDEBAR LEFT -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Elements</div>
+      <div class="element-grid">
+        <button class="el-btn" onclick="insertElement('scene')">INT./EXT. <span class="key">⌘1</span></button>
+        <button class="el-btn" onclick="insertElement('action')">ACTION <span class="key">⌘2</span></button>
+        <button class="el-btn" onclick="insertElement('character')">CHARACTER <span class="key">⌘3</span></button>
+        <button class="el-btn" onclick="insertElement('dialogue')">DIALOGUE <span class="key">⌘4</span></button>
+        <button class="el-btn" onclick="insertElement('parenthetical')">(PAREN.) <span class="key">⌘5</span></button>
+        <button class="el-btn" onclick="insertElement('transition')">TRANSITION <span class="key">⌘6</span></button>
+        <button class="el-btn" onclick="insertElement('shot')">SHOT <span class="key">⌘7</span></button>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Scenes</div>
+      <div class="scene-list" id="sceneList">
+        <span style="font-size:10px;color:var(--muted)">No scenes yet</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Stats</div>
+      <div class="stats">
+        <div class="stat">Pages <span id="statPages">1</span></div>
+        <div class="stat">Scenes <span id="statScenes">0</span></div>
+        <div class="stat">Words <span id="statWords">0</span></div>
+        <div class="stat">Characters <span id="statChars">0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT PAGE -->
+  <div class="script-container" id="scriptContainer">
+    <div class="page">
+      <div class="page-num">1.</div>
+      <textarea 
+        class="script-editor" 
+        id="scriptEditor" 
+        spellcheck="true"
+        placeholder="FADE IN:
+
+INT. LOCATION - DAY
+
+Begin your screenplay here. Use the element buttons or keyboard shortcuts to format your script properly.
+
+The standard format uses:
+• Scene headings in ALL CAPS (INT./EXT.)
+• Action lines describing what we see
+• CHARACTER NAMES centered and in all caps
+• Dialogue below the character name
+• (Parentheticals) for brief acting directions
+• TRANSITIONS: like CUT TO: or DISSOLVE TO:
+
+
+FADE OUT."
+      ></textarea>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="panel-section">
+      <div class="panel-title">Characters</div>
+      <div class="char-list" id="charList"></div>
+      <div class="add-char-row">
+        <input class="add-char-input" id="charInput" placeholder="ADD NAME" maxlength="30" 
+               onkeydown="if(event.key==='Enter') addCharacter()">
+        <button class="add-char-btn" onclick="addCharacter()">+</button>
+      </div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">AI Assist</div>
+      <div class="ai-section" style="padding:0">
+        <div style="font-size:9px;color:var(--muted);margin-bottom:6px;line-height:1.5;padding:5px 6px;border-left:2px solid var(--accent);background:var(--bg)">⚠ Requires internet connection & API access</div>
+        <textarea class="ai-prompt" id="aiPrompt" placeholder="Ask for help... e.g. 'Write a tense confrontation between two rivals' or 'Suggest a scene transition'"></textarea>
+        <button class="btn primary" style="width:100%;font-size:11px" onclick="aiAssist()">GENERATE</button>
+        <div class="ai-result" id="aiResult"></div>
+      </div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">Scene Notes</div>
+      <textarea class="notes-textarea" id="sceneNotes" placeholder="Notes for current scene...&#10;&#10;Story ideas, character motivations, research..."></textarea>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">Quick Reference</div>
+      <div class="format-guide">
+        <div class="guide-item"><code>INT./EXT.</code> Scene headings always CAPS, include time of day</div>
+        <div class="guide-item"><code>ACTION</code> Present tense. Only what the camera sees.</div>
+        <div class="guide-item"><code>CHARACTER</code> Centred, ALL CAPS before their dialogue</div>
+        <div class="guide-item"><code>(paren)</code> Brief direction. Use sparingly.</div>
+        <div class="guide-item"><code>CUT TO:</code> Transitions flush right</div>
+        <div class="guide-item">1 page ≈ 1 minute of screen time</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORMAT GUIDE MODAL -->
+<div class="modal-overlay" id="guideModal">
+  <div class="modal">
+    <h2>Screenplay Format Guide</h2>
+    <p>Standard screenplay format follows industry conventions. Each element has a specific position and style on the page.</p>
+    <table>
+      <tr><td>SCENE HEADING</td><td>INT. or EXT. + Location + Time. Always ALL CAPS. Tells us where and when.</td></tr>
+      <tr><td>ACTION LINE</td><td>What we see and hear. Present tense. Lean, visual prose only.</td></tr>
+      <tr><td>CHARACTER CUE</td><td>Centred, ALL CAPS. The speaking character's name before dialogue.</td></tr>
+      <tr><td>DIALOGUE</td><td>Centred, narrower column. What the character says.</td></tr>
+      <tr><td>(PARENTHETICAL)</td><td>Inside parentheses, brief acting direction. Avoid overuse.</td></tr>
+      <tr><td>TRANSITION</td><td>CUT TO:, DISSOLVE TO:, SMASH CUT TO: — flush right.</td></tr>
+      <tr><td>SHOT</td><td>POV, CLOSE ON, WIDE — specific camera direction.</td></tr>
+    </table>
+    <p><strong style="color:var(--text)">Tips:</strong></p>
+    <p>• Keep action blocks under 4 lines for visual pacing.</p>
+    <p>• Avoid directing from the page — let dialogue and action tell the story.</p>
+    <p>• One page = approximately one minute of screen time.</p>
+    <p>• Use (V.O.) for voice-over, (O.S.) for off-screen, (CONT'D) for continuing dialogue after a page break.</p>
+    <button class="close-btn" onclick="closeGuide()">CLOSE</button>
+    <div style="clear:both"></div>
+  </div>
+</div>
+
+<script>
+const editor = document.getElementById('scriptEditor');
+let characters = [];
+
+// ─── Element insertion ───────────────────────────────────────
+const templates = {
+  scene:         '\n\nINT. LOCATION - DAY\n\n',
+  action:        '\n\n',
+  character:     '\n\n                    CHARACTER NAME\n',
+  dialogue:      '            ',
+  parenthetical: '                  (reaction)\n',
+  transition:    '\n\n                                            CUT TO:\n\n',
+  shot:          '\n\nCLOSE ON:\n\n'
+};
+
+function insertElement(type) {
+  const tmpl = templates[type] || '\n\n';
+  const pos = editor.selectionStart;
+  const val = editor.value;
+  editor.value = val.slice(0, pos) + tmpl + val.slice(pos);
+  const newPos = pos + tmpl.length;
+  editor.selectionStart = editor.selectionEnd = newPos;
+  editor.focus();
+  document.getElementById('currentEl').textContent = type.toUpperCase();
+  updateStats();
+}
+
+// ─── Stats ───────────────────────────────────────────────────
+function updateStats() {
+  const text = editor.value;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const pages = Math.max(1, Math.ceil(words / 180));
+  
+  // Count scenes (lines starting with INT. or EXT.)
+  const scenes = (text.match(/^(INT\.|EXT\.)/gm) || []).length;
+  
+  document.getElementById('statPages').textContent = pages;
+  document.getElementById('statScenes').textContent = scenes;
+  document.getElementById('statWords').textContent = words;
+  document.getElementById('statChars').textContent = characters.length;
+
+  // Scene list
+  const sceneMatches = [...text.matchAll(/^(INT\.|EXT\.)(.+)$/gm)];
+  const sceneList = document.getElementById('sceneList');
+  if (sceneMatches.length === 0) {
+    sceneList.innerHTML = '<span style="font-size:10px;color:var(--muted)">No scenes yet</span>';
+  } else {
+    sceneList.innerHTML = sceneMatches.slice(0, 20).map((m, i) =>
+      `<button class="scene-item" onclick="scrollToScene(${i})">${i+1}. ${m[0].trim()}</button>`
+    ).join('');
+  }
+}
+
+editor.addEventListener('input', updateStats);
+
+function scrollToScene(idx) {
+  // crude scroll — find line position
+  const text = editor.value;
+  const matches = [...text.matchAll(/^(INT\.|EXT\.)(.+)$/gm)];
+  if (matches[idx]) {
+    const pct = matches[idx].index / text.length;
+    editor.scrollTop = pct * editor.scrollHeight;
+  }
+}
+
+// ─── Characters ──────────────────────────────────────────────
+function addCharacter() {
+  const input = document.getElementById('charInput');
+  const name = input.value.trim().toUpperCase();
+  if (!name || characters.includes(name)) { input.value = ''; return; }
+  characters.push(name);
+  input.value = '';
+  renderChars();
+  updateStats();
+}
+
+function renderChars() {
+  const list = document.getElementById('charList');
+  list.innerHTML = characters.map(c =>
+    `<div class="char-tag" onclick="insertChar('${c}')">${c}<span class="char-count" onclick="event.stopPropagation();removeChar('${c}')">✕</span></div>`
+  ).join('');
+}
+
+function insertChar(name) {
+  const pos = editor.selectionStart;
+  const val = editor.value;
+  const spaces = ' '.repeat(20);
+  const insert = `\n\n${spaces}${name}\n`;
+  editor.value = val.slice(0, pos) + insert + val.slice(pos);
+  editor.selectionStart = editor.selectionEnd = pos + insert.length;
+  editor.focus();
+}
+
+function removeChar(name) {
+  characters = characters.filter(c => c !== name);
+  renderChars();
+  updateStats();
+}
+
+// ─── AI Assist ───────────────────────────────────────────────
+async function aiAssist() {
+  const prompt = document.getElementById('aiPrompt').value.trim();
+  if (!prompt) return;
+  const result = document.getElementById('aiResult');
+  result.style.display = 'block';
+  result.textContent = 'Generating...';
+
+  const title = document.getElementById('projectTitle').value || 'Untitled';
+  const context = editor.value.slice(-800);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are a professional screenplay writer. Write in standard Hollywood screenplay format. 
+Use ALL CAPS for scene headings (INT./EXT.) and character names before dialogue. 
+Keep action lines brief and visual. Present tense only.
+The screenplay is titled: "${title}".`,
+        messages: [
+          { role: 'user', content: `Here is the recent context from the script:\n\n${context}\n\n---\n\nRequest: ${prompt}\n\nWrite the screenplay content in proper format:` }
+        ]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.map(b => b.text || '').join('') || 'No response.';
+    result.textContent = text;
+
+    // Add to script button
+    const insertBtn = document.createElement('button');
+    insertBtn.className = 'btn primary';
+    insertBtn.style = 'margin-top:6px;width:100%;font-size:10px';
+    insertBtn.textContent = '+ INSERT INTO SCRIPT';
+    insertBtn.onclick = () => {
+      const pos = editor.selectionStart || editor.value.length;
+      const val = editor.value;
+      editor.value = val.slice(0, pos) + '\n\n' + text + '\n\n' + val.slice(pos);
+      editor.focus();
+      updateStats();
+      result.style.display = 'none';
+      result.textContent = '';
+      if (result.nextSibling && result.nextSibling.tagName === 'BUTTON') result.nextSibling.remove();
+    };
+    result.after(insertBtn);
+  } catch (e) {
+    result.textContent = 'Error: ' + e.message;
+  }
+}
+
+// ─── Export ──────────────────────────────────────────────────
+function exportScript() {
+  const title = document.getElementById('projectTitle').value || 'screenplay';
+  const content = editor.value;
+  const blob = new Blob([content], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = title.replace(/\s+/g, '_') + '.txt';
+  a.click();
+}
+
+// ─── Clear ───────────────────────────────────────────────────
+function clearScript() {
+  if (!confirm('Start a new script? This will clear the current content.')) return;
+  editor.value = '';
+  document.getElementById('projectTitle').value = 'UNTITLED SCREENPLAY';
+  characters = [];
+  renderChars();
+  updateStats();
+}
+
+// ─── Guide ───────────────────────────────────────────────────
+function showGuide() { document.getElementById('guideModal').classList.add('open'); }
+function closeGuide() { document.getElementById('guideModal').classList.remove('open'); }
+
+// ─── Keyboard shortcuts ──────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey) {
+    const map = {'1':'scene','2':'action','3':'character','4':'dialogue','5':'parenthetical','6':'transition','7':'shot'};
+    if (map[e.key]) { e.preventDefault(); insertElement(map[e.key]); }
+  }
+});
+
+// Enter in AI prompt
+document.getElementById('aiPrompt').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) aiAssist();
+});
+
+updateStats();
+</script>
+</body>
+</html>
